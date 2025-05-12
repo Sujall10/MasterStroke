@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}{{ video.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .video-container {
+        position: relative;
+        width: 100%;
+        height: auto;
+        background: #000;
+    }
+    .video-container video {
+        width: 100%;
+        height: auto;
+    }
+    .transcript {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h1>{{ video.title }}</h1>
+                    <p class="text-muted">Course: <a href="{{ url_for('course', course_id=video.course_id) }}">{{ video.course.title }}</a></p>
+
+                    <div class="video-container mb-4">
+                        <!-- <video controls>
+                            <source src="{{ video.file_path }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video> -->
+                        {% if video.file_path %}
+                        <video width="800" height="450" controls>
+    <source src="{{ url_for('static', filename=video.file_path) }}" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
+{% else %}
+    <p><strong>No video available.</strong></p>
+{% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <a href="{{ url_for('practice', video_id=video.id) }}" class="btn btn-primary">
+                            <i class="bi bi-journal-check"></i> Practice Questions
+                        </a>
+                        {% if current_user.is_authenticated %}
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="completedToggle" 
+                                   data-video-id="{{ video.id }}" 
+                                   {% if progress and progress.completed %}checked{% endif %}>
+                            <label class="form-check-label" for="completedToggle">Mark as completed</label>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <h3>Description</h3>
+                        <p>{{ video.description }}</p>
+                    </div>
+
+                    {% if video.transcript %}
+                    <div class="mb-4">
+                        <h3>Transcript</h3>
+                        <div class="transcript card card-body bg-light">
+                            {{ video.transcript|safe }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            {# same as your comment section, no change needed #}
+            ...
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Course Videos Navigation -->
+            {# same as your course videos sidebar, no change needed #}
+            ...
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Handle marking video as completed manually if you want (not mandatory here)
+</script>
+{% endblock %}

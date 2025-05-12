@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}All Courses{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">All Courses</h1>
+
+    {% if courses %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-success">
+                <tr>
+                    <th>Serial No.</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ course.title }}</td>
+                    <td>{{ course.description[:50] }}{% if course.description|length > 50 %}...{% endif %}</td>
+                    <td>
+                        <!-- Delete form with proper CSRF protection -->
+                        <form action="{{ url_for('admin_delete_course', course_id=course.id) }}" method="POST" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirmDelete();">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </form>
+                        <!-- Optional Edit button -->
+                        {# <a href="{{ url_for('admin_edit_course', course_id=course.id) }}" class="btn btn-warning btn-sm">
+                            <i class="bi bi-pencil-square"></i> Edit
+                        </a> #}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No courses found.</div>
+    {% endif %}
+</div>
+
+<!-- Custom JavaScript to handle delete confirmation -->
+<script>
+    function confirmDelete() {
+        return confirm('Are you sure you want to delete this course?');
+    }
+</script>
+{% endblock %}

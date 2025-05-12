@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Upload{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Upload Content</li>
+        </ol>
+    </nav>
+    
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Upload Content</h3>
+        </div>
+        <div class="card-body">
+            <ul class="nav nav-tabs mb-4" id="uploadTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="course-tab" data-bs-toggle="tab" data-bs-target="#course" type="button" role="tab">
+                        Course
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="video-tab" data-bs-toggle="tab" data-bs-target="#video" type="button" role="tab">
+                        Video
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="quiz-tab" data-bs-toggle="tab" data-bs-target="#quiz" type="button" role="tab">
+                        Quiz
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="uploadTabsContent">
+                <!-- Course Tab -->
+                <div class="tab-pane fade show active" id="course" role="tabpanel">
+                    <form method="POST" action="{{ url_for('admin_add_course') }}" enctype="multipart/form-data">
+                        {{ course_form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ course_form.title.label(class="form-label") }}
+                            {{ course_form.title(class="form-control") }}
+                            {% for error in course_form.title.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ course_form.description.label(class="form-label") }}
+                            {{ course_form.description(class="form-control", rows=4) }}
+                            {% for error in course_form.description.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ course_form.category.label(class="form-label") }}
+                                {{ course_form.category(class="form-select") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ course_form.thumbnail.label(class="form-label") }}
+                                {{ course_form.thumbnail(class="form-control") }}
+                                <small class="text-muted">Recommended size: 800x450px</small>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Upload Course</button>
+                    </form>
+                </div>
+                
+                <!-- Video Tab -->
+                <div class="tab-pane fade" id="video" role="tabpanel">
+                    <form method="POST" action="{{ url_for('admin_add_video') }}" enctype="multipart/form-data">
+                        {{ video_form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ video_form.course_id.label(class="form-label") }}
+                            {{ video_form.course_id(class="form-select") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ video_form.title.label(class="form-label") }}
+                            {{ video_form.title(class="form-control") }}
+                            {% for error in video_form.title.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ video_form.description.label(class="form-label") }}
+                            {{ video_form.description(class="form-control", rows=3) }}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ video_form.url.label(class="form-label") }}
+                                {{ video_form.url(class="form-control") }}
+                                <small class="text-muted">YouTube or Vimeo embed URL</small>
+                            </div>
+                            <div class="col-md-6">
+                                {{ video_form.duration.label(class="form-label") }}
+                                {{ video_form.duration(class="form-control") }}
+                                <small class="text-muted">In minutes</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ video_form.thumbnail.label(class="form-label") }}
+                            {{ video_form.thumbnail(class="form-control") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ video_form.transcript.label(class="form-label") }}
+                            {{ video_form.transcript(class="form-control", rows=5) }}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Upload Video</button>
+                    </form>
+                </div>
+                
+                <!-- Quiz Tab -->
+                <div class="tab-pane fade" id="quiz" role="tabpanel">
+                    <form method="POST" action="{{ url_for('admin_add_quiz') }}">
+                        {{ quiz_form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ quiz_form.video_id.label(class="form-label") }}
+                            {{ quiz_form.video_id(class="form-select") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ quiz_form.question.label(class="form-label") }}
+                            {{ quiz_form.question(class="form-control", rows=3) }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ quiz_form.options.label(class="form-label") }}
+                            {{ quiz_form.options(class="form-control") }}
+                            <small class="text-muted">Separate options with | character</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ quiz_form.correct_answer.label(class="form-label") }}
+                            {{ quiz_form.correct_answer(class="form-control") }}
+                            <small class="text-muted">Must match one of the options exactly</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Add Quiz Question</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

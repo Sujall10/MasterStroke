@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Practice - {{ video.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('course', course_id=video.course_id) }}">{{ video.course.title }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('video', video_id=video.id) }}">{{ video.title }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Practice</li>
+                </ol>
+            </nav>
+            
+            <h1 class="mb-4">Practice Questions</h1>
+            
+            {% if quizzes %}
+                {% for quiz in quizzes %}
+                <div class="card mb-4" id="quiz-{{ quiz.id }}">
+                    <div class="card-header">
+                        <h4>Question {{ loop.index }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">{{ quiz.question }}</p>
+                        
+                        <div class="quiz-options mt-3">
+                            {% set options = quiz.options.split('|') %}
+                            {% for option in options %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input quiz-option" 
+                                       type="radio" 
+                                       name="quiz-{{ quiz.id }}" 
+                                       id="quiz-{{ quiz.id }}-option-{{ loop.index }}" 
+                                       value="{{ option }}">
+                                <label class="form-check-label" for="quiz-{{ quiz.id }}-option-{{ loop.index }}">
+                                    {{ option }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <button class="btn btn-primary mt-3 submit-quiz" 
+                                data-quiz-id="{{ quiz.id }}">
+                            Submit Answer
+                        </button>
+                        
+                        <div class="quiz-feedback mt-3 d-none">
+                            <div class="alert d-none"></div>
+                            <div class="correct-answer mt-2">
+                                <strong>Correct answer:</strong> 
+                                <span class="answer-text">{{ quiz.correct_answer }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info">
+                    No practice questions available for this video yet.
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Video Details</h5>
+                </div>
+                <div class="card-body">
+                    <h5>{{ video.title }}</h5>
+                    <p>{{ video.description[:100] }}...</p>
+                    <a href="{{ url_for('video', video_id=video.id) }}" class="btn btn-sm btn-outline-primary">
+                        Back to Video
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Your Progress</h5>
+                </div>
+                <div class="card-body">
+                    {% if current_user.is_authenticated %}
+                        {% set total_quizzes = quizzes|length %}
+                        {% set correct_attempts = Attempt.query.filter_by(user_id=current_user.id, correct=True).count() %}
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 >
+                                {{ correct_attempts }}/{{ total_quizzes }}
+                            </div>
+                        </div>
+                        <p>You've answered {{ correct_attempts }} out of {{ total_quizzes }} questions correctly.</p>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <a href="{{ url_for('login') }}">Log in</a> to track your progress.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.querySelectorAll('.submit-quiz').forEach(button => {
+        button.addEventListener('click', function() {
+            const quizId = this.dataset.quizId;
+            const selectedOption = document.querySelector(`input[name="quiz-${quizId}"]:checked`);
+            
+            if (!selectedOption) {
+                alert('Please select an answer before submitting.');
+                return;
+            }
+            
+            const feedbackDiv = this.closest('.card-body').querySelector('.quiz-feedback');
+            const alertDiv = feedbackDiv.querySelector('.alert');
+            
+            fetch("{{ url_for('submit_quiz') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    quiz_id: quizId,
+                    selected_answer: selectedOption.value
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                feedbackDiv.classList.remove('d-none');
+                alertDiv.classList.remove('d-none');
+                
+                if (data.correct) {
+                    alertDiv.classList.add('alert-success');
+                    alertDiv.textContent = 'Correct! Well done.';
+                } else {
+                    alertDiv.classList.add('alert-danger');
+                    alertDiv.textContent = 'Incorrect. Try again!';
+                }
+                
+                // Show correct answer
+                feedbackDiv.querySelector('.answer-text').textContent = data.correct_answer;
+            });
+        });
+    });
+</script>
+{% endblock %}

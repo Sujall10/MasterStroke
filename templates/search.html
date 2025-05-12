@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Search Results for "{{ query }}"</h1>
+    
+    {% if not (courses or videos) %}
+        <div class="alert alert-info">
+            No results found for "{{ query }}". Try different keywords.
+        </div>
+    {% endif %}
+    
+    {% if courses %}
+    <section class="mb-5">
+        <h3 class="mb-3">Courses</h3>
+        <div class="row">
+            {% for course in courses %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    {% if course.thumbnail %}
+                    <img src="{{ url_for('static', filename='uploads/thumbnails/' + course.thumbnail) }}" class="card-img-top" alt="{{ course.title }}">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='images/default-course.jpg') }}" class="card-img-top" alt="Default course image">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ course.title }}</h5>
+                        <p class="card-text">{{ course.description[:100] }}...</p>
+                        <span class="badge bg-secondary">{{ course.category }}</span>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <a href="{{ url_for('course', course_id=course.id) }}" class="btn btn-primary">View Course</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    
+    {% if videos %}
+    <section class="mb-5">
+        <h3 class="mb-3">Videos</h3>
+        <div class="list-group">
+            {% for video in videos %}
+            <a href="{{ url_for('video', video_id=video.id) }}" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ video.title }}</h5>
+                    <small>{{ video.duration }} min</small>
+                </div>
+                <p class="mb-1">{{ video.description[:150] }}...</p>
+                <small>From: {{ video.course.title }}</small>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
